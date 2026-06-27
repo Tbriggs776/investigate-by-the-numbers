@@ -127,7 +127,18 @@ pagination, and a nightly `pg_cron` + `pg_net` schedule (`ingest-awards-nightly`
 08:00 UTC) whose dispatch path was verified end-to-end (200, ok). The slice comes
 from `config.test_slice`; the invoke key lives in Vault as `ingest_invoke_key`.
 
+**Phase 2 entity resolution** (`enrich-entities` edge function) is proven: SAM.gov
+registration/CAGE/address/socioeconomic + Census geocoding, upserting stub→enriched.
+Hand-checked (Leidos UEI NPUZV84KPU17 matches SAM exactly). 35 of 64 entities
+enriched on the first pass before the **SAM daily API quota** capped us (HTTP 429,
+resets 00:00 UTC). Re-run `enrich-entities` with `onlyStubs=true` after reset — or
+use a higher-quota SAM key — to finish the remaining 29. The SAM key lives in Vault
+(`sam_api_key`), read via the service-role-only `get_vault_secret` RPC.
+
+Accepted lints (documented, not fixed): the two gate RPCs are SECURITY DEFINER by
+design; `pg_net` sits in the `public` schema (moving it risks the proven cron — low
+real risk on an anon-locked DB).
+
 Subawards (FSRS feed) and transaction-grain modification detail are deferred (see
-[docs/open-decisions.md](docs/open-decisions.md)). **Phase 2** (entity resolution —
-needs the `SAM_API_KEY` secret) is next. **Phase 3** is blocked pending the real
-methodology replacing `docs/methodology-PENDING.md`.
+[docs/open-decisions.md](docs/open-decisions.md)). **Phase 3** is blocked pending the
+real methodology replacing `docs/methodology-PENDING.md`.

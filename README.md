@@ -15,11 +15,16 @@ for the governing rules and the human-gate design.
 |---|---|---|
 | 0 | Scaffold — repo, Supabase, schema, config seed, test slice | ✅ |
 | 1 | Ingestion — USAspending pull, idempotent, nightly | ✅ |
-| 2 | Entity Resolution — SAM.gov enrichment + geocoding | ☐ |
+| 2 | Entity Resolution — SAM.gov enrichment + geocoding | ✅ * |
 | 3 | Scorers — 9 SQL views w/ fixtures | ☐ (blocked: needs methodology doc) |
 | 4 | Composite & Tiering — CAS + tiers | ☐ |
 | 5 | Review Dashboard — React queue + case workflow | ☐ |
 | 6 | Backtest Harness — score known cases | ☐ |
+
+\* Phase 2 pipeline is proven (SAM enrichment + Census geocoding; sampled records
+match SAM by hand). 35 of 64 entities enriched on the first run before the SAM
+**daily API quota** was hit; re-run `enrich-entities` (`onlyStubs=true`) after the
+quota resets, or use a higher-quota SAM key, to finish the rest.
 
 ## Layout
 
