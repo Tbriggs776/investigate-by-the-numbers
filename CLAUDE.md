@@ -120,8 +120,14 @@ auto-publishing**. A human clears every gate, always.
 
 ## Current status
 
-Phase 0 complete + hardened (migrations 0001–0010), reviewed by a multi-lens
-adversarial pass. GitHub repo live (private). Vercel deferred to Phase 5 (no
-frontend yet). Phase 1 (ingestion) is unblocked and is the next session. Phase 3
-is blocked pending `docs/methodology-PENDING.md` being replaced with the real
-methodology (it defines the scorers + thresholds).
+Phases 0 and 1 complete. **Phase 1 ingest** (`ingest-awards` edge function) is
+proven against the VA/541512/FY2023 slice: 150 awards / 61 entity stubs, full
+FPDS field coverage, idempotent (a second run added zero duplicates), 3-page
+pagination, and a nightly `pg_cron` + `pg_net` schedule (`ingest-awards-nightly`,
+08:00 UTC) whose dispatch path was verified end-to-end (200, ok). The slice comes
+from `config.test_slice`; the invoke key lives in Vault as `ingest_invoke_key`.
+
+Subawards (FSRS feed) and transaction-grain modification detail are deferred (see
+[docs/open-decisions.md](docs/open-decisions.md)). **Phase 2** (entity resolution —
+needs the `SAM_API_KEY` secret) is next. **Phase 3** is blocked pending the real
+methodology replacing `docs/methodology-PENDING.md`.

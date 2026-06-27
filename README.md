@@ -14,7 +14,7 @@ for the governing rules and the human-gate design.
 | Phase | What | State |
 |---|---|---|
 | 0 | Scaffold — repo, Supabase, schema, config seed, test slice | ✅ |
-| 1 | Ingestion — USAspending pull, idempotent, nightly | ☐ |
+| 1 | Ingestion — USAspending pull, idempotent, nightly | ✅ |
 | 2 | Entity Resolution — SAM.gov enrichment + geocoding | ☐ |
 | 3 | Scorers — 9 SQL views w/ fixtures | ☐ (blocked: needs methodology doc) |
 | 4 | Composite & Tiering — CAS + tiers | ☐ |
