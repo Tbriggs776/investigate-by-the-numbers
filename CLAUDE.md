@@ -84,6 +84,35 @@ Enforcement, layered:
 - **Phase 5 — Review Dashboard.** React queue + `case_files` workflow.
 - **Phase 6 — Backtest Harness.** Score known prosecuted cases; tuning report.
 
+## Ingestion contracts (established by migration 0010 — Phase 1 must honor)
+
+The Phase 0 schema review hardened the foundation. Phase 1 ingestion must obey:
+
+- **raw before awards.** `awards.award_unique_id` FKs `raw_awards` — write the raw
+  payload first, the normalized award second, in the same transaction per page.
+  Raw is the untrusted source-of-record for reconciliation.
+- **awards is summary-grain.** One row per `generated_unique_award_id`, holding
+  USAspending's cumulative values. Per-action/modification detail, if MODBALLOON
+  needs it, goes in a separate transactions table — never re-derive sums from
+  repeated upserts. (See [open-decisions](docs/open-decisions.md) #5.)
+- **entity stub upsert never downgrades enrichment.** Ingest upserts a stub
+  (`enrichment_status='stub'`); the upsert must be
+  `ON CONFLICT (uei) DO UPDATE ... WHERE entities.enriched_at IS NULL` so a nightly
+  re-run can't reset an enriched row's registration/address/geocode/socioeconomic
+  back to stub. Phase 2 sets `enrichment_status='enriched'` + `enriched_at`.
+- **subawards upsert on `natural_key`.** `ON CONFLICT (natural_key) DO UPDATE`. The
+  key is set by a trigger (deterministic), so re-syncs add zero duplicates.
+- **resolved vs unresolved UEI.** `awards.uei` is the resolved FK (nullable,
+  `ON DELETE RESTRICT`). Always persist `raw_recipient_uei` from the payload — a
+  NULL `uei` with a non-null `raw_recipient_uei` means *unresolved*, not "no UEI".
+- **fiscal_year is GENERATED** from `action_date` (federal FY, Oct 1). Never set it
+  from ingest; never trust a calendar-derived source value over it.
+- **scorers upsert** `ON CONFLICT (award_unique_id, scorer_name) DO UPDATE` (scores)
+  / `ON CONFLICT (award_unique_id)` (composite_scores).
+
+Methodology/owner decisions still open (incl. **PRICEOUT has no USAspending data
+source**): see [docs/open-decisions.md](docs/open-decisions.md).
+
 ## Out of scope for v1
 
 State/local data, automated FOIA generation, story drafting, and **any
@@ -91,5 +120,8 @@ auto-publishing**. A human clears every gate, always.
 
 ## Current status
 
-Phase 0 complete. Phase 3 is blocked pending `docs/methodology-PENDING.md` being
-replaced with the real methodology (it defines the scorers + thresholds).
+Phase 0 complete + hardened (migrations 0001–0010), reviewed by a multi-lens
+adversarial pass. GitHub repo live (private). Vercel deferred to Phase 5 (no
+frontend yet). Phase 1 (ingestion) is unblocked and is the next session. Phase 3
+is blocked pending `docs/methodology-PENDING.md` being replaced with the real
+methodology (it defines the scorers + thresholds).
