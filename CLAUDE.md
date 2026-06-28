@@ -151,9 +151,14 @@ Part 1) are SQL views in migration 0014 — one readable view per flag, each rea
 thresholds from `config`, each emitting a 0–100 subscore + `inputs` snapshot.
 `run_all_scoring()` (service_role only) rebuilds `scores` + `composite_scores`; CAS =
 `sum(weight×subscore)/100`, tiered 40/70. Proven on the slice: CAS reproduces by hand
-from components; 6 scorers fire; NELA/CLUSTER/PASSTHRU correctly stay silent (no
-shells/clusters/pass-throughs among established VA IT primes); all 157 in Monitor (no
-fraud in this slice — validate the investigation tier via the Phase 6 backtest).
+from components; top lead is a price-outlier-plus-competition-collapse award (MUMPS
+AUDIOFAX, CAS 19); all 157 in Monitor (no fraud in this slice — validate the
+investigation tier via the Phase 6 backtest). An adversarial per-scorer review
+(migration 0016) corrected real bugs: **MODBALLOON disabled** (its summary-grain ratio
+measured unexercised options = the benign case), PASSTHRU restricted to qualifying
+set-aside codes, COMPCOLLAPSE null-join guard, PRICEOUT mean-centered z + median branch,
+SOLECONC min-award guard, FYE min-denominator guard, plus benign-explanation notes.
+Five scorers currently fire (NELA/CLUSTER/PASSTHRU/MODBALLOON silent on this slice).
 
 Data-reach proxies (methodology permits "where available"): PRICEOUT = obligation-per-PSC
 (no unit price in USAspending); MODBALLOON = current/base ratio (mod-vs-option deferred);

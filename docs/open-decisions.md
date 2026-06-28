@@ -42,12 +42,19 @@ primes, switch to a **per-prime** fetch (POST `/api/v2/subawards/` per
 `award_unique_id`) so every subaward of every held prime is captured regardless of
 subaward date. Do this when PASSTHRU is built.
 
-### 5. MODBALLOON ingest grain — OPEN
+### 5. MODBALLOON ingest grain — OPEN (scorer DISABLED until resolved)
 Ingest each modification as its own `awards` row (needed for the timeline + the
 Document agent), or only the latest snapshot? `awards` is **summary-grain** today.
 If per-action detail is needed, add a `transactions` table at transaction grain —
 do not re-derive sums from repeated upserts. `base_award_unique_key` (added in
 0010) is the grouping key.
+
+**The MODBALLOON scorer is DISABLED (migration 0016).** The adversarial scorer
+review found that at summary grain `current_total_value / base_value` =
+`base_and_all_options / base_exercised_options` = **unexercised priced options** —
+which is the methodology's explicit *benign* case, the inverse of mod-driven
+ballooning. True MODBALLOON needs transaction-grain mod history + the original base
+value, neither of which summary grain provides. Re-enable once this is ingested.
 
 ### 6. NELA missing-registration handling — OPEN
 How is an un-enriched / deregistered entity (no `registration_date`) treated —
