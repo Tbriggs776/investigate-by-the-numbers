@@ -73,7 +73,7 @@ Enforcement, layered:
 ## Build phases (one per session)
 
 - **Phase 0 — Scaffold.** Repo, Supabase project, schema migrations, seeded
-  `config`, test slice defined. ← current
+  `config`, test slice defined.
 - **Phase 1 — Ingestion.** USAspending pull for the test slice, idempotent
   upserts, nightly schedule.
 - **Phase 2 — Entity Resolution.** SAM.gov enrichment, geocoding, `address_exclusions`.
@@ -165,5 +165,24 @@ Data-reach proxies (methodology permits "where available"): PRICEOUT = obligatio
 CLUSTER = address-only (officer/agent → Dossier agent); GEOMISMATCH = state-level
 (site-type → property records). All documented in [open-decisions](docs/open-decisions.md).
 
-**Next:** Phase 5 (review dashboard) and Phase 6 (backtest). The Wave-1 **Sentinel**
-agent is now unblocked (scores exist to monitor).
+**Phase 5 is done.** The review dashboard is a React + TypeScript (Vite) app under `src/`
+— the human triage surface. **Queue** ranks every scored award by CAS (tier filter +
+search); **Lead detail** renders each fired scorer with subscore/weight/exact CAS
+contribution + its `inputs` snapshot + its benign-explanation note, plus full FPDS facts,
+the SAM entity, and source links — the "prioritization signal, never a finding" disclaimer
+on every scored screen; **Case file** drives the seven verification gates as a human-cleared
+checklist (`clear_case_gate`), status Hold/Kill/Publish (`advance_case_status`, Publish
+locked until all 7 clear), sourced evidence + reviewer notes. The browser carries only the
+publishable key and runs as `authenticated`; it CANNOT write status/gate_progress directly
+(column grant denies it — only the RPCs can), and anon reads nothing (RLS). Proven: strict
+`tsc` + vite build clean; live end-to-end as `authenticated` (create case, clear gate +
+advance status via RPC, save notes — all succeed; a direct `status` write returns
+`permission denied`; queue reads 157 rows sorted by CAS; anon read denied). Reviewer
+accounts are provisioned in the Supabase dashboard (Auth → Users); they sign in at `/login`.
+Frontend env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) are public — RLS is the
+boundary; see `.env.example`.
+
+**Next:** Phase 6 (backtest harness — score known prosecuted cases, validate the
+investigation tier, produce a tuning report). The Wave-1 **Sentinel** agent is also
+unblocked (scores exist to monitor). Light follow-ups: finish the 12 remaining SAM entity
+stubs after the daily quota resets; a per-prime subaward fetch for full PASSTHRU coverage.

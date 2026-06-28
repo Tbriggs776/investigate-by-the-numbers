@@ -18,7 +18,7 @@ for the governing rules and the human-gate design.
 | 2 | Entity Resolution — SAM.gov enrichment + geocoding | ✅ * |
 | 3 | Scorers — 9 SQL views | ✅ (all 9 live; 6 fire on the dev slice) |
 | 4 | Composite & Tiering — CAS + tiers | ✅ (CAS reproduces by hand) |
-| 5 | Review Dashboard — React queue + case workflow | ☐ |
+| 5 | Review Dashboard — React queue + case workflow | ✅ |
 | 6 | Backtest Harness — score known cases | ☐ |
 
 \* Phase 2 pipeline is proven (SAM enrichment + Census geocoding; sampled records
@@ -49,3 +49,35 @@ emitting a 0–100 subscore + an `inputs` snapshot. `run_all_scoring()` rebuilds
 high-weight shell/cluster/pass-through scorers correctly stay silent, and the
 most-anomalous awards surface in Monitor without false accusations. Validate the
 investigation tier via the Phase 6 backtest against known cases.
+
+## The review dashboard (Phase 5)
+
+A React + TypeScript app (Vite) — the human triage surface over the scored leads.
+
+- **Queue** — every scored award ranked by CAS, filterable by tier, searchable by
+  vendor / agency / NAICS / PSC.
+- **Lead detail** — every fired scorer shown with its subscore, weight, exact CAS
+  contribution, the `inputs` snapshot that produced it, **and the benign
+  explanation it cannot rule out** rendered prominently. Full FPDS award facts,
+  the resolved SAM entity, and source links to USAspending + SAM. The
+  "prioritization signal, never a finding" disclaimer is on every scored screen.
+- **Case file** — the seven verification gates ([methodology](docs/methodology.md)
+  Part 2) as a human-cleared checklist; status **Hold / Kill / Publish** with
+  Publish locked until all seven gates clear; sourced evidence and reviewer notes.
+
+The human gate is enforced in software, not just the UI: the browser client
+carries only the publishable key and runs as `authenticated`. It **cannot** write
+`case_files.status` / `gate_progress` directly (column privilege denies it); the
+only path is the `advance_case_status` / `clear_case_gate` SECURITY DEFINER RPCs.
+Row-Level Security returns nothing to an anonymous client.
+
+```bash
+npm install
+cp .env.example .env.local   # fill VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY (publishable key)
+npm run dev                  # http://localhost:5174
+npm run build                # strict tsc + production bundle
+```
+
+**Reviewer accounts:** this is an internal tool — anon sees nothing. Create the
+first reviewer in the Supabase dashboard (Authentication → Users → Add user, email +
+password, mark confirmed). They sign in at `/login`.
