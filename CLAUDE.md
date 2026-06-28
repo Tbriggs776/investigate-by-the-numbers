@@ -139,6 +139,13 @@ Accepted lints (documented, not fixed): the two gate RPCs are SECURITY DEFINER b
 design; `pg_net` sits in the `public` schema (moving it risks the proven cron — low
 real risk on an anon-locked DB).
 
-Subawards (FSRS feed) and transaction-grain modification detail are deferred (see
-[docs/open-decisions.md](docs/open-decisions.md)). **Phase 3** is blocked pending the
-real methodology replacing `docs/methodology-PENDING.md`.
+**Subaward ingestion** (`ingest-subawards`) is built and proven idempotent (two
+runs → 10 rows, not 20 — the live confirmation of the 0010 natural_key fix). It
+links subawards to held primes and skips orphans. Coverage is currently thin (the
+slice-feed approach); a per-prime fetch is the fuller approach for PASSTHRU — see
+[open-decisions](docs/open-decisions.md) #4. Transaction-grain modification detail
+remains deferred.
+
+**Phase 3** (the nine scorers) is the next real milestone and is blocked pending the
+real methodology replacing `docs/methodology-PENDING.md` — it defines the scorers and
+their thresholds, which we do not invent.

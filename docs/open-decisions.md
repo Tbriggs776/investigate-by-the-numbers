@@ -29,10 +29,18 @@ For PRICEOUT / SOLECONC / COMPCOLLAPSE: peer by **NAICS** (broad) or **PSC**
 ### 3. SOLECONC denominator granularity — OPEN
 Office-level (now captured: `awarding_office_code`) vs sub-agency. Methodology picks.
 
-### 4. PASSTHRU denominator — OPEN
-`obligation` vs `base_value` vs `current_total_value`. Subaward amounts (FSRS) and
-prime amounts (FPDS) come from different feeds and often don't reconcile; store
-`subawards.prime_award_unique_key` (added in 0010) to reconcile.
+### 4. PASSTHRU denominator + subaward coverage — OPEN
+Denominator: `obligation` vs `base_value` vs `current_total_value`. Subaward
+amounts (FSRS) and prime amounts (FPDS) come from different feeds and often don't
+reconcile; `subawards.prime_award_unique_key` (added in 0010) is stored to reconcile.
+
+**Coverage:** `ingest-subawards` currently uses the slice-filtered subaward feed,
+which only returns subawards whose *subaward* action falls in the slice window AND
+whose prime is in `awards` (others are skipped to respect the FK — on the dev slice
+that skipped 531/544, leaving 10 across 6 primes). For full PASSTHRU coverage of our
+primes, switch to a **per-prime** fetch (POST `/api/v2/subawards/` per
+`award_unique_id`) so every subaward of every held prime is captured regardless of
+subaward date. Do this when PASSTHRU is built.
 
 ### 5. MODBALLOON ingest grain — OPEN
 Ingest each modification as its own `awards` row (needed for the timeline + the
