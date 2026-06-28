@@ -81,3 +81,11 @@ npm run build                # strict tsc + production bundle
 **Reviewer accounts:** this is an internal tool — anon sees nothing. Create the
 first reviewer in the Supabase dashboard (Authentication → Users → Add user, email +
 password, mark confirmed). They sign in at `/login`.
+
+**Deploy (Vercel).** The repo is deploy-ready: framework preset `vite`, and
+[`vercel.json`](vercel.json) adds the SPA catch-all rewrite so client routes resolve
+on direct load. The two public client vars live in [`.env.production`](.env.production)
+so a GitHub push builds a working app with no dashboard config (publishable key + URL
+are public; RLS is the boundary). Vercel project env vars override the file if set.
+The service_role key is never bundled — the deployed bundle is verified to contain
+only the publishable key.
