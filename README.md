@@ -16,8 +16,8 @@ for the governing rules and the human-gate design.
 | 0 | Scaffold — repo, Supabase, schema, config seed, test slice | ✅ |
 | 1 | Ingestion — USAspending pull, idempotent, nightly | ✅ |
 | 2 | Entity Resolution — SAM.gov enrichment + geocoding | ✅ * |
-| 3 | Scorers — 9 SQL views w/ fixtures | ☐ (blocked: needs methodology doc) |
-| 4 | Composite & Tiering — CAS + tiers | ☐ |
+| 3 | Scorers — 9 SQL views | ✅ (all 9 live; 6 fire on the dev slice) |
+| 4 | Composite & Tiering — CAS + tiers | ✅ (CAS reproduces by hand) |
 | 5 | Review Dashboard — React queue + case workflow | ☐ |
 | 6 | Backtest Harness — score known cases | ☐ |
 
@@ -39,8 +39,13 @@ docs/                  methodology, build brief, agent architecture
 
 Supabase (Postgres + Edge Functions), Vercel, React + TypeScript.
 
-## Required before Phase 3
+## The scoring core
 
-`docs/methodology-PENDING.md` must be replaced with the real methodology
-document — it defines the nine scorers and their thresholds. No scorer is built
-without it.
+The nine scorers ([methodology](docs/methodology.md) Part 1) are SQL views in
+migration `0014` — each readable, each reading thresholds from `config`, each
+emitting a 0–100 subscore + an `inputs` snapshot. `run_all_scoring()` rebuilds
+`scores` + `composite_scores`. CAS = `sum(weight × subscore) / 100`, tiered at
+40 / 70. On the VA/541512/FY2023 slice it runs clean: 6 scorers fire, the
+high-weight shell/cluster/pass-through scorers correctly stay silent, and the
+most-anomalous awards surface in Monitor without false accusations. Validate the
+investigation tier via the Phase 6 backtest against known cases.

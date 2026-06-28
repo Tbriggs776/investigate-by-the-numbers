@@ -146,6 +146,19 @@ slice-feed approach); a per-prime fetch is the fuller approach for PASSTHRU — 
 [open-decisions](docs/open-decisions.md) #4. Transaction-grain modification detail
 remains deferred.
 
-**Phase 3** (the nine scorers) is the next real milestone and is blocked pending the
-real methodology replacing `docs/methodology-PENDING.md` — it defines the scorers and
-their thresholds, which we do not invent.
+**Phases 3 + 4 are done.** The nine scorers ([docs/methodology.md](docs/methodology.md)
+Part 1) are SQL views in migration 0014 — one readable view per flag, each reading
+thresholds from `config`, each emitting a 0–100 subscore + `inputs` snapshot.
+`run_all_scoring()` (service_role only) rebuilds `scores` + `composite_scores`; CAS =
+`sum(weight×subscore)/100`, tiered 40/70. Proven on the slice: CAS reproduces by hand
+from components; 6 scorers fire; NELA/CLUSTER/PASSTHRU correctly stay silent (no
+shells/clusters/pass-throughs among established VA IT primes); all 157 in Monitor (no
+fraud in this slice — validate the investigation tier via the Phase 6 backtest).
+
+Data-reach proxies (methodology permits "where available"): PRICEOUT = obligation-per-PSC
+(no unit price in USAspending); MODBALLOON = current/base ratio (mod-vs-option deferred);
+CLUSTER = address-only (officer/agent → Dossier agent); GEOMISMATCH = state-level
+(site-type → property records). All documented in [open-decisions](docs/open-decisions.md).
+
+**Next:** Phase 5 (review dashboard) and Phase 6 (backtest). The Wave-1 **Sentinel**
+agent is now unblocked (scores exist to monitor).
