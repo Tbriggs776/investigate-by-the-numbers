@@ -182,7 +182,30 @@ accounts are provisioned in the Supabase dashboard (Auth → Users); they sign i
 Frontend env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) are public — RLS is the
 boundary; see `.env.example`.
 
-**Next:** Phase 6 (backtest harness — score known prosecuted cases, validate the
-investigation tier, produce a tuning report). The Wave-1 **Sentinel** agent is also
-unblocked (scores exist to monitor). Light follow-ups: finish the 12 remaining SAM entity
-stubs after the daily quota resets; a per-prime subaward fetch for full PASSTHRU coverage.
+**Phase 6 is done — and it is a calibration gate that the engine did NOT pass yet
+(that is the finding).** Migration 0017 builds a `backtest` schema mirroring the exact
+engine (config/thresholds shared with `public`), proven faithful by re-scoring the live
+157 population through it: 157/157 CAS match, zero diff. A research pass produced 68
+citation-verified prosecuted federal-contracting cases (0 rejected; 3 hand-spot-checked
+against primary DOJ/OIG/court sources); 453 REAL awards for 32 of those vendors were
+pulled from USAspending and scored. **Result: 0 of 453 reached Review (40) or
+Investigation (70); max CAS 19.14 ≈ the clean slice's 19.00.** The scorers with their
+inputs (COMPCOLLAPSE, PRICEOUT) fired hard on fraud (avg 80–86), but the composite never
+elevated because: (1) the **FY2017 `trend.fy_floor` gates SOLECONC/COMPCOLLAPSE/FYE off
+82% of the (older) prosecuted awards** — a self-restoring what-if at floor 2008 lit
+SOLECONC 0→35, COMPCOLLAPSE 18→61, yet max CAS only moved to 20.34; (2) the three
+highest-weight scorers (**NELA 18, PASSTHRU 14, CLUSTER 16 = 48% of weight**) were
+data-starved (no SAM reg dates; only 9/453 awards carried FSRS subaward totals; only
+primary vendors retrieved so rings collapsed); (3) **per-award CAS dilutes a vendor-level
+signal**. Full write-up + prioritized tuning roadmap: [docs/backtest-report.md](docs/backtest-report.md).
+`backtest.cases` is currently empty (the citation registry load was interrupted; re-run
+the research step to repopulate — the findings do not depend on it).
+
+**Do not trust a live investigation-tier flag until the Phase 6 tuning lands:** feed
+PASSTHRU (per-prime FSRS subawards, open-decisions #4) + NELA (SAM reg dates) + CLUSTER
+(full entity rings); make `trend.fy_floor` per-scorer / detection-vs-trend aware; add a
+vendor/entity-level rollup score; down-weight GEOMISMATCH; then re-run the backtest.
+
+**Next candidates:** implement the tuning above and re-backtest; or the Wave-1 **Sentinel**
+agent (scores exist to monitor). Light follow-ups: finish the 12 remaining SAM entity stubs
+after the daily quota resets.

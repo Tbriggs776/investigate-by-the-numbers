@@ -4,6 +4,38 @@ Decisions surfaced by the Phase 0 schema review that depend on the methodology
 document or on choices the editor/owner must make. Captured here so they are not
 rediscovered painfully at Phase 3. Each has a status.
 
+## Phase 6 backtest calibration — action items (validated against real prosecuted cases)
+
+The Phase 6 backtest ([docs/backtest-report.md](backtest-report.md)) scored 453 real
+USAspending awards from 32 prosecuted-fraud vendors. **None reached the Review/Investigation
+tier** (max CAS 19.14 ≈ the clean slice). The diagnosis is precise and these are the tuning
+levers, in priority order. **The live investigation tier should not be trusted until these
+land and the backtest is re-run.**
+
+- **P6-A. Feed PASSTHRU real subawards — now the #1 lever.** 256/453 backtest awards were
+  qualifying set-asides but only 9 carried an FSRS subaward total, so PASSTHRU (weight 14,
+  the most common case dimension) fired once. This is the per-prime FSRS subaward fetch
+  already noted in #4 below — the backtest confirms it is the highest-ROI fix, not optional.
+- **P6-B. Feed NELA registration dates.** 0 backtest entities had `initial_registration_date`
+  (USAspending award detail lacks it; SAM is quota-limited), so NELA (weight 18) was dark.
+  Backtest entities need SAM enrichment (or a bulk SAM/entity-registration source).
+- **P6-C. Make `trend.fy_floor` per-scorer / detection-vs-trend aware.** The single global
+  FY2017 floor gated SOLECONC/COMPCOLLAPSE/FYE off **82% (373/453)** of the prosecuted
+  awards, which are older. A what-if at floor 2008 lit SOLECONC 0→35 and COMPCOLLAPSE 18→61.
+  Split "recent enough to act on" (live-queue recency filter) from "old enough that the
+  trend math is unreliable" (per-scorer floor).
+- **P6-D. Add a vendor/entity-level rollup score.** CAS is per-award, but fraud is a vendor
+  property; anomalous portfolios never accumulate (e.g. Ross Group tripped 4 distinct scorers
+  across its awards, max single-award CAS 19). Aggregate per vendor (max / distinct-scorers
+  bonus / decayed sum). Likely the single biggest accuracy gain.
+- **P6-E. Down-weight or gate GEOMISMATCH.** 213/288 hits at a flat 50; for services NAICS a
+  state mismatch is expected-benign. It adds a near-constant +3 CAS and separates nothing.
+- **P6-F. Re-tune 40/70 thresholds only AFTER A–D.** Lowering them now raises clean-slice
+  false positives just as much; the gap to close is signal, not the threshold.
+- **P6-G. `backtest.cases` registry** is empty (the citation-registry load was interrupted and
+  the scratchpad was later cleared). Re-run the Phase 6 research/verify step to repopulate the
+  in-DB registry if reproducibility-in-DB is wanted; the report retains the case-set narrative.
+
 ## Blocks a scorer
 
 ### 1. PRICEOUT has no data source — OPEN (methodology)
